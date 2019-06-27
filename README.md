@@ -1,2 +1,3 @@
-# inker
-Web API to run Ink code
+# Inker
+
+Web API to execute and experiment with the [Ink programming language](https://github.com/thesephist/ink).
