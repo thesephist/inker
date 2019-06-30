@@ -38,5 +38,5 @@ app.get('*', (req, res) => res.send('404 not found'));
 const PORT = process.env.PORT || 4200;
 app.listen(
     PORT,
-    () => console.log(`Velaqua running on 0.0.0.0:${PORT}`),
+    () => console.log(`Ink eval running on 0.0.0.0:${PORT}`),
 );
