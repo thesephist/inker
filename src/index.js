@@ -16,9 +16,7 @@ app.use('/eval', bodyParser.text({
     limit: '25kb',
 }));
 app.post('/eval', async (req, res) => {
-    // TODO: eval
     const inkSource = req.body;
-    // TODO: error check before passing off to evalInk
     if (typeof inkSource === 'string' && inkSource.trim() !== '') {
         const result = await evalInk(inkSource);
         res.json(result);
