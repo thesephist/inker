@@ -15,6 +15,17 @@ async function evalInk(inkSource) {
     return resp.json();
 }
 
+function debounce(fn, duration) {
+    let timer;
+    const dfn = (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            fn(...args);
+        }, duration);
+    }
+    return dfn;
+}
+
 class IOBox extends StyledComponent {
 
     init() {
@@ -35,9 +46,8 @@ class IOBox extends StyledComponent {
             this.persistInput(false);
         });
 
-        // TODO: also save every few seconds (10 seconds?) debounced
-
         this.persistInput = this.persistInput.bind(this);
+        this.debouncedPersist = debounce(this.persistInput, 5000);
         this.handleInput = this.handleInput.bind(this);
         this.handleKeydown = this.handleKeydown.bind(this);
         this.switchSplit = this.switchSplit.bind(this);
@@ -70,6 +80,8 @@ class IOBox extends StyledComponent {
             evt.preventDefault();
             this.persistInput(true);
         }
+
+        this.debouncedPersist();
     }
 
     switchSplit() {
@@ -83,7 +95,12 @@ class IOBox extends StyledComponent {
             this.waiting = true;
             this.render();
 
-            this.result = await evalInk(this.stdin);
+            try {
+                this.result = await evalInk(this.stdin);
+                this.render();
+            } catch (e) {
+                this.result.output = 'Client error: ' + e.toString();
+            }
             this.waiting = false;
             this.render();
         }
@@ -256,7 +273,7 @@ class App extends StyledComponent {
         return jdom`<main>
             <header>
                 <div class="left">
-                    <h1>Ink</h1>
+                    <h1>Ink lab</h1>
                 </div>
                 <div class="right">
                     <a href="https://github.com/thesephist/ink"
