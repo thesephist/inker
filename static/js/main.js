@@ -27,7 +27,7 @@ const EXAMPLES = [
         slug: 'newton',
         description: 'Newton\'s root finding algorithm applied to compute square roots quickly.',
     },
-]
+];
 
 async function evalInk(inkSource) {
     const resp = await fetch('/eval', {
@@ -242,6 +242,9 @@ class IOBox extends StyledComponent {
                 outline-color: var(--block-accent-color);
             }
         }
+        .output {
+            background: #eee;
+        }
         code {
             font-family: 'Dank Mono', 'Menlo', 'Monaco', monospace;
             display: block;
@@ -274,6 +277,7 @@ class IOBox extends StyledComponent {
                     oninput="${this.handleInput}"
                     onkeydown="${this.handleKeydown}"
                     placeholder="out('Hello, Ink!')"
+                    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="${false}"
                     value="${this.stdin}"/>
                 <div class="savedBadge ${this.showSaved ? '' : 'hidden'}">
                     Saved to this device
@@ -402,7 +406,7 @@ class App extends StyledComponent {
             ul {
                 padding-left: 0;
                 overflow-y: auto;
-                min-height: 300px;
+                min-height: 200px;
                 max-height: 60vh;
                 height: 50vh;
             }
@@ -423,6 +427,13 @@ class App extends StyledComponent {
             .filename {
                 font-weight: bold;
                 margin-bottom: 6px;
+            }
+        }
+        @media only screen and (max-width: 700px) {
+            .examples {
+                top: 52px;
+                transform: translate(-50%, 0);
+                min-width: 92%;
             }
         }
         `;
