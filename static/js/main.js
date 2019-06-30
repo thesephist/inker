@@ -64,6 +64,7 @@ function debounce(fn, duration) {
 function ExampleItem(item, insertCb) {
     return jdom`<li>
         <button class="exampleItem block" onclick="${async () => {
+            insertCb('\` loading example... \`')
             insertCb(await getExample(item.slug));
         }}" tabindex="0">
             <div class="filename">${item.slug}.ink</div>
