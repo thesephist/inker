@@ -172,7 +172,7 @@ class IOBox extends StyledComponent {
     buttons() {
         return jdom`<div>
             <button
-                class="block"
+                class="block mobile-hidden"
                 title="Flip / rotate panes"
                 onclick=${this.switchSplit}>Flip</button>
             <button
@@ -377,6 +377,7 @@ class App extends StyledComponent {
             background: #f8f8f8;
             box-shadow: 0 3px 8px -1px rgba(0, 0, 0, .3);
             border-radius: 3px;
+            overflow: hidden;
 
             min-width: 300px;
             max-width: 700px;
@@ -437,7 +438,7 @@ class App extends StyledComponent {
                     <a href="https://github.com/thesephist/ink"
                         rel="noopener noreferrer"
                         target="_blank"
-                        class="block"
+                        class="block tiny-hidden"
                         title="About the Ink programming language"
                         >About</a>
                     <button

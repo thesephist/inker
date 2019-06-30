@@ -45,8 +45,25 @@ reduce := (list, f, acc) => (
 ` create a simple list `
 list := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
+` utility functions for printing `
 log := s => out(s + '
 ')
+` tail recursive list -> string converter `
+stringList := list => '[' + stringListRec(list, 0, '') + ']'
+stringListRec := (list, start, acc) => (
+    start :: {
+        len(list) -> acc
+        _ -> stringListRec(
+            list
+            start + 1
+            (acc :: {
+                '' -> ''
+                _ -> acc + ', '
+            }) + string(list.(start))
+        )
+    }
+)
+
 
 log('Mapped 1-10 list, squared
 -> ' + stringList(map(list, n => n * n)))
