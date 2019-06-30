@@ -1,6 +1,6 @@
 const { spawn } = require('child_process');
 
-const INKPATH = process.env.INKPATH || 'ink';
+const INKPATH = process.env.INKPATH || './bin/ink';
 
 function evalInk(inkSource) {
     return new Promise((res, rej) => {
