@@ -9,7 +9,11 @@ function evalInk(inkSource) {
         const proc = spawn(`${INKPATH}`, [], {
             stdio: 'pipe',
         });
+        // TODO: what if we HTTP stream this output instead? ~~Node.js Streams~~
         proc.stdout.on('data', data => {
+            output += data;
+        });
+        proc.stderr.on('data', data => {
             output += data;
         });
 
