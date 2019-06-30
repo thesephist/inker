@@ -2,6 +2,33 @@ const {
     StyledComponent,
 } = Torus;
 
+const EXAMPLES = [
+    {
+        slug: 'helloworld',
+        description: 'Basic hello world example.',
+    },
+    {
+        slug: 'fizzbuzz',
+        description: 'FizzBuzz implemented in Ink.',
+    },
+    {
+        slug: 'fibonacci',
+        description: 'Naive and optimized (memoized) fibonacci sequence generators.',
+    },
+    {
+        slug: 'list',
+        description: 'Various list-related functions implemented in Ink.',
+    },
+    {
+        slug: 'pi',
+        description: 'Estimating Pi with a Monte Carlo (statistical) simulation.',
+    },
+    {
+        slug: 'newton',
+        description: 'Newton\'s root finding algorithm applied to compute square roots quickly.',
+    },
+]
+
 async function evalInk(inkSource) {
     const resp = await fetch('/eval', {
         method: 'POST',
@@ -15,6 +42,14 @@ async function evalInk(inkSource) {
     return resp.json();
 }
 
+async function getExample(slug) {
+    const resp = await fetch(`/static/ex/${slug}.ink`, {
+        method: 'GET',
+        cache: 'no-cache',
+    });
+    return resp.text();
+}
+
 function debounce(fn, duration) {
     let timer;
     const dfn = (...args) => {
@@ -24,6 +59,29 @@ function debounce(fn, duration) {
         }, duration);
     }
     return dfn;
+}
+
+function ExampleItem(item, insertCb) {
+    return jdom`<li>
+        <button class="exampleItem block" onclick="${async () => {
+            insertCb(await getExample(item.slug));
+        }}" tabindex="0">
+            <div class="filename">${item.slug}.ink</div>
+            <div class="description">${item.description}</div>
+        </button>
+    </li>`;
+}
+
+function ExampleList(insertCb, closeCb) {
+    return jdom`<div class="backdrop" onclick="${closeCb}">
+        <div class="examples" onclick="${evt => evt.stopPropagation()}">
+            <h2>Examples</h2>
+            <p>Tap on an example to try it.</p>
+            <ul>
+                ${EXAMPLES.map(it => ExampleItem(it, insertCb))}
+            </ul>
+        </div>
+    </div>`;
 }
 
 class IOBox extends StyledComponent {
@@ -52,6 +110,11 @@ class IOBox extends StyledComponent {
         this.handleKeydown = this.handleKeydown.bind(this);
         this.switchSplit = this.switchSplit.bind(this);
         this.requestEval = this.requestEval.bind(this);
+    }
+
+    insert(src) {
+        this.stdin = src;
+        this.render();
     }
 
     persistInput(showBadge) {
@@ -175,20 +238,26 @@ class IOBox extends StyledComponent {
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             border: 0;
+            &:focus {
+                outline-color: var(--block-accent-color);
+            }
         }
         code {
             font-family: 'Dank Mono', 'Menlo', 'Monaco', monospace;
             display: block;
             font-size: 1em;
             line-height: 1.4em;
-            margin-bottom: .6em;
+            margin-bottom: .4em;
         }
         .savedBadge {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 8px;
+            right: 8px;
             color: #555;
             transition: opacity .2s;
+            padding: 4px 6px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 3px;
 
             &.hidden {
                 opacity: 0;
@@ -226,7 +295,31 @@ class IOBox extends StyledComponent {
 class App extends StyledComponent {
 
     init() {
+        this.showExamples = false;
+
         this.ioBox = new IOBox();
+
+        this.insertExample = this.insertExample.bind(this);
+        this.openExamples = this.openExamples.bind(this);
+        this.closeExamples = this.closeExamples.bind(this);
+    }
+
+    insertExample(src) {
+        this.ioBox.insert(src);
+        this.closeExamples();
+    }
+
+    openExamples() {
+        this.showExamples = true;
+        this.render();
+
+        // eck. cheap trick but it works
+        document.querySelector('.exampleItem').focus();
+    }
+
+    closeExamples() {
+        this.showExamples = false;
+        this.render();
     }
 
     styles() {
@@ -266,6 +359,71 @@ class App extends StyledComponent {
             top: 8px;
             padding: 3px 6px;
         }
+
+        .backdrop {
+            position: fixed;
+            z-index: 10;
+            background: rgba(0, 0, 0, .3);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .examples {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #f8f8f8;
+            box-shadow: 0 3px 8px -1px rgba(0, 0, 0, .3);
+            border-radius: 3px;
+
+            min-width: 300px;
+            max-width: 700px;
+            width: 50%;
+
+            h2 {
+                font-weight: normal;
+                font-size: 1em;
+                margin: 0;
+                display: block;
+                width: 100%;
+                height: 36px;
+                background: #222;
+                color: #fff;
+                padding: 8px 16px;
+                justify-content: space-between;
+                box-sizing: border-box;
+            }
+            p, ul {
+                margin: 12px;
+            }
+            ul {
+                padding-left: 0;
+                overflow-y: auto;
+                min-height: 300px;
+                max-height: 60vh;
+                height: 50vh;
+            }
+            li {
+                width: 100%;
+            }
+        }
+        .exampleItem {
+            cursor: pointer;
+            list-style: none;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: left;
+            width: calc(100% - 12px);
+            &:focus {
+                outline: initial;
+            }
+            .filename {
+                font-weight: bold;
+                margin-bottom: 6px;
+            }
+        }
         `;
     }
 
@@ -273,7 +431,7 @@ class App extends StyledComponent {
         return jdom`<main>
             <header>
                 <div class="left">
-                    <h1>Ink lab</h1>
+                    <h1>Inker</h1>
                 </div>
                 <div class="right">
                     <a href="https://github.com/thesephist/ink"
@@ -282,10 +440,16 @@ class App extends StyledComponent {
                         class="block"
                         title="About the Ink programming language"
                         >About</a>
+                    <button
+                        class="block"
+                        title="Show example snippets"
+                        onclick=${this.openExamples}>Examples</button>
                     ${this.ioBox.buttons().children}
                 </div>
             </header>
             ${this.ioBox.node}
+            ${this.showExamples ?
+                ExampleList(this.insertExample, this.closeExamples) : null}
         </main>`;
     }
 
