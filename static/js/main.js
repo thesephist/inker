@@ -21,6 +21,7 @@ class IOBox extends StyledComponent {
         this.waiting = false;
         this.showSaved = false;
         this.verticalSplit = window.innerWidth > 600;
+        this.flipState = 0;
 
         const lastSave = window.localStorage.getItem('ink_eval_save');
         this.stdin = lastSave || `out('Hello, World!')`;
@@ -73,28 +74,34 @@ class IOBox extends StyledComponent {
 
     switchSplit() {
         this.verticalSplit = !this.verticalSplit;
+        this.flipState ++;
         this.render();
     }
 
     async requestEval() {
-        this.waiting = true;
-        this.render();
+        if (!this.waiting) {
+            this.waiting = true;
+            this.render();
 
-        this.result = await evalInk(this.stdin);
-        this.waiting = false;
-        this.render();
+            this.result = await evalInk(this.stdin);
+            this.waiting = false;
+            this.render();
+        }
     }
 
     buttons() {
         return jdom`<div>
             <button
                 class="block"
+                title="Flip / rotate panes"
                 onclick=${this.switchSplit}>Flip</button>
             <button
                 class="block"
+                title="Save to your browser"
                 onclick=${this.persistInput}>Save</button>
             <button
                 class="accent block"
+                title="Run Ink program & show output"
                 onclick=${this.requestEval}>Run</button>
         </div>`;
     }
@@ -102,7 +109,11 @@ class IOBox extends StyledComponent {
     styles() {
         return css`
         display: flex;
-        flex-direction: ${this.verticalSplit ? 'row' : 'column'};
+        flex-direction: ${(
+            this.verticalSplit ? 'row' : 'column'
+        ) + (
+            this.flipState % 4 < 2 ? '' : '-reverse'
+        )};
         justify-content: space-between;
         height: 0;
         flex-grow: 1;
@@ -252,6 +263,7 @@ class App extends StyledComponent {
                         rel="noopener noreferrer"
                         target="_blank"
                         class="block"
+                        title="About the Ink programming language"
                         >About</a>
                     ${this.ioBox.buttons().children}
                 </div>

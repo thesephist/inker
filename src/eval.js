@@ -18,22 +18,35 @@ function evalInk(inkSource) {
         });
 
         proc.once('close', (code, signal) => {
-            res({
-                code,
-                error: null,
-                output,
-            });
+            if (signal === 'SIGTERM') {
+                res({
+                    code,
+                    error: 'process killed (timeout?)',
+                    output: 'process killed (timeout?)',
+                });
+            } else {
+                res({
+                    code,
+                    error: null,
+                    output,
+                });
+            }
         });
         proc.once('error', err => {
             res({
                 code: 1,
                 error: err,
-                output,
+                output: output + '\n' + err,
             })
         });
 
         proc.stdin.write(inkSource);
         proc.stdin.end();
+
+        setTimeout(() => {
+            proc.kill('SIGTERM');
+            // 20s is current timeout
+        }, 20 * 1000);
     });
 }
 
