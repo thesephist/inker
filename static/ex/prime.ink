@@ -1,21 +1,26 @@
-` list function demos `
+` prime sieve `
 
-` tail recursive reversing a list `
-reverse := list => (
-    state := [len(list) - 1]
-    reduce(list, (acc, item) => (
-        acc.(state.0) := item
-        state.0 := state.0 - 1
-        acc
-    ), {})
+` is a single number prime? `
+isPrime := n => (
+  ip := (p, acc) => p :: {
+    1 -> acc
+    _ -> ip(p - 1, acc & n % p > 0)
+  }
+  ip(floor(pow(n, 0.5)), true)
 )
 
-` tail recursive map `
-map := (list, f) => (
-    reduce(list, (l, item) => (
-        l.(len(l)) := f(item)
-        l
-    ), {})
+` build a list of consecutive integers from 2 .. max `
+buildConsecutive := max => (
+  bc := (i, acc) => (
+    i :: {
+      (max + 1) -> acc
+      _ -> (
+        acc.(i - 2) := i
+        bc(i + 1, acc)
+      )
+    }
+  )
+  bc(2, [])
 )
 
 ` tail recursive filter `
@@ -42,13 +47,6 @@ reduce := (list, f, acc) => (
     )(0, acc)
 )
 
-` create a simple list `
-list := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-` utility functions for printing `
-log := s => out(s + '
-')
-
 ` tail recursive numeric list -> string converter `
 stringList := list => (
     stringListRec := (l, start, acc) => (
@@ -67,17 +65,13 @@ stringList := list => (
     '[' + stringListRec(list, 0, '') + ']'
 )
 
+` utility function for printing things `
+log := s => out(s + '
+')
 
+` primes under N are numbers 2 .. N, filtered by isPrime `
+getPrimesUnder := n => filter(buildConsecutive(n), isPrime)
 
-log('Mapped 1-10 list, squared
--> ' + stringList(map(list, n => n * n)))
-
-log('Filtered 1-10 list, evens
--> ' + stringList(filter(list, n => n % 2 = 0)))
-
-log('Reduced 1-10 list, multiplication
--> ' + string(reduce(list, (acc, n) => acc * n, 1)))
-
-log('Reversing 1-10 list
--> ' + stringList(reverse(list)))
-
+ps := getPrimesUnder(1000)
+log(stringList(ps))
+log('Total number of primes under 1000: ' + string(len(ps)))

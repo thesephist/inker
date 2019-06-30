@@ -24,6 +24,14 @@ const EXAMPLES = [
         description: 'Estimating Pi with a Monte Carlo (statistical) simulation.',
     },
     {
+        slug: 'prime',
+        description: 'A prime sieve (for computing all primes under N) written by composing functions.',
+    },
+    {
+        slug: 'quicksort',
+        description: 'An efficient in-place quicksort with Lomuto partitioning.',
+    },
+    {
         slug: 'newton',
         description: 'Newton\'s root finding algorithm applied to compute square roots quickly.',
     },
@@ -205,11 +213,13 @@ class IOBox extends StyledComponent {
             width: 50%;
             box-sizing: border-box;
             position: relative;
+            flex-shrink: 1;
         }
         .divider {
             background: #222;
             width: 3px;
             height: 100%;
+            flex-shrink: 0;
         }
         &.flipped {
             .inkInputBox,
