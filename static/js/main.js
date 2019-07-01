@@ -142,6 +142,8 @@ class IOBox extends StyledComponent {
 
     handleInput(evt) {
         this.stdin = evt.target.value;
+
+        this.debouncedPersist();
     }
 
     handleKeydown(evt) {
@@ -151,9 +153,16 @@ class IOBox extends StyledComponent {
         } else if (evt.key.toLowerCase() === 's' && ctrlCmd) {
             evt.preventDefault();
             this.persistInput(true);
+        } else if (evt.key === 'Tab' && !evt.shiftKey) {
+            evt.preventDefault();
+            const idx = evt.target.selectionStart;
+            if (idx !== null) {
+                const front = evt.target.value.substr(0, idx);
+                const back = evt.target.value.substr(idx);
+                evt.target.value = front + '\t' + back;
+                evt.target.setSelectionRange(idx + 1, idx + 1);
+            }
         }
-
-        this.debouncedPersist();
     }
 
     switchSplit() {

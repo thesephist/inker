@@ -11,16 +11,16 @@ fib := n => (
 
 ` memoized / dynamic programming implementation `
 memo := {
-    0: 0,
-    1: 1,
+	0: 0,
+	1: 1,
 }
 fibMemo := n => (
-    memo.(n) :: {
-        () -> (
-            memo.(n) := fibMemo(n - 1) + fibMemo(n - 2)
-        )
-        _ -> memo.(n)
-    }
+	memo.(n) :: {
+		() -> (
+			memo.(n) := fibMemo(n - 1) + fibMemo(n - 2)
+		)
+		_ -> memo.(n)
+	}
 )
 
 log := s => out(s + '
@@ -29,4 +29,3 @@ log := s => out(s + '
 log('fib(10) is 55:')
 out('Naive solution: '), log(string(fib(10)))
 out('Dynamic solution: '), log(string(fibMemo(10)))
-
