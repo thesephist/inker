@@ -107,6 +107,7 @@ class IOBox extends StyledComponent {
             exit: 0,
             error: null,
             output: 'click Run to see output...',
+            duration: 0,
         };
 
         window.addEventListener('beforeunload', evt => {
@@ -265,6 +266,9 @@ class IOBox extends StyledComponent {
         .output {
             background: #eee;
         }
+        .elapsedTime {
+            color: #777;
+        }
         code {
             font-family: 'Dank Mono', 'Menlo', 'Monaco', monospace;
             display: block;
@@ -306,6 +310,7 @@ class IOBox extends StyledComponent {
             <div class="divider"></div>
             <div class="inkOutputBox">
                 <div class="output">
+                    <code class="elapsedTime">elapsed: ${this.result.duration}s</code>
                     ${this.waiting ?  'running...' :
                         this.result.output.split('\n')
                             .map(line => jdom`<code>${line}</code>`)}

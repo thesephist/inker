@@ -6,9 +6,13 @@ function evalInk(inkSource) {
     return new Promise((res, rej) => {
         // TODO: eventually, sandbox this with '--no-read --no-write --no-net (--no-exec?)'
         let output = '';
+        const start = Date.now();
+        const end = () => (Date.now() - start) / 1000;
+
         const proc = spawn(`${INKPATH}`, [], {
             stdio: 'pipe',
         });
+
         // TODO: what if we HTTP stream this output instead? ~~Node.js Streams~~
         proc.stdout.on('data', data => {
             output += data;
@@ -23,12 +27,14 @@ function evalInk(inkSource) {
                     code,
                     error: 'process killed (timeout?)',
                     output: 'process killed (timeout?)',
+                    duration: end(),
                 });
             } else {
                 res({
                     code,
                     error: null,
                     output,
+                    duration: end(),
                 });
             }
         });
@@ -37,6 +43,7 @@ function evalInk(inkSource) {
                 code: 1,
                 error: err,
                 output: output + '\n' + err,
+                duration: end(),
             })
         });
 
