@@ -9,7 +9,8 @@ function evalInk(inkSource) {
         const start = Date.now();
         const end = () => (Date.now() - start) / 1000;
 
-        const proc = spawn(`${INKPATH}`, [], {
+        // -isolate flag sandboxes the running process
+        const proc = spawn(`${INKPATH}`, ['-isolate'], {
             stdio: 'pipe',
         });
 
