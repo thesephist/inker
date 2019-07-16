@@ -35,6 +35,10 @@ const EXAMPLES = [
         slug: 'newton',
         description: 'Newton\'s root finding algorithm applied to compute square roots quickly.',
     },
+    {
+        slug: 'std',
+        description: 'The Ink standard library, a set of useful functions and utilities for composing programs',
+    },
 ];
 
 async function evalInk(inkSource) {
