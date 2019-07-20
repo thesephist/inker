@@ -90,6 +90,7 @@ function ExampleList(insertCb, closeCb) {
         <div class="examples" onclick="${evt => evt.stopPropagation()}">
             <h2>Examples</h2>
             <p>Tap on an example to try it.</p>
+            <p>You can also find <a href="https://github.com/thesephist/ink/tree/master/samples" target="_blank" rel="noopener noreferer">more sample Ink programs on GitHub</a>, though many of them won't be able to run in this browser context today, if they take some user input or generate files as output.</p>
             <ul>
                 ${EXAMPLES.map(it => ExampleItem(it, insertCb))}
             </ul>
@@ -392,7 +393,6 @@ class App extends StyledComponent {
             top: 8px;
             padding: 3px 6px;
         }
-
         .backdrop {
             position: fixed;
             z-index: 10;
@@ -428,6 +428,12 @@ class App extends StyledComponent {
                 padding: 8px 16px;
                 justify-content: space-between;
                 box-sizing: border-box;
+            }
+            p {
+                line-height: 1.5em;
+            }
+            a {
+                color: var(--block-accent-color);
             }
             p, ul {
                 margin: 12px;
