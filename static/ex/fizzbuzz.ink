@@ -1,30 +1,19 @@
 ` ink fizzbuzz implementation `
 
-log := s => out(s + '
-')
+std := load('std')
 
-` fizzes or buzzes one number `
-fb := n => (
-	[n % 3, n % 5] :: {
+log := std.log
+range := std.range
+each := std.each
+
+fizzbuzz := n => each(
+	range(1, n + 1, 1)
+	n => [n % 3, n % 5] :: {
 		[0, 0] -> log('FizzBuzz')
 		[0, _] -> log('Fizz')
 		[_, 0] -> log('Buzz')
-		_ -> log(string(n))
+		_ -> log(n)
 	}
-)
-
-` fizzbuzz up to max `
-fizzbuzz := max => (
-	helper := (n, max) => (
-		n :: {
-			max -> fb(n)
-			_ -> (
-				fb(n)
-				helper(n + 1, max)
-			)
-		}
-	)
-	helper(1, max)
 )
 
 fizzbuzz(100)

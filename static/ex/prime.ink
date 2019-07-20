@@ -1,5 +1,12 @@
 ` prime sieve `
 
+std := load('std')
+
+log := std.log
+stringList := std.stringList
+filter := std.filter
+reduce := std.reduce
+
 ` is a single number prime? `
 isPrime := n => (
 	` is n coprime with nums < p? `
@@ -26,53 +33,6 @@ buildConsecutive := max => (
 	})(2)
 	acc
 )
-
-` tail recursive filter `
-filter := (list, f) => (
-	reduce(list, (l, item) => (
-		f(item) :: {
-			true -> l.(len(l)) := item
-		}
-		l
-	), {})
-)
-
-` tail recursive reduce `
-reduce := (list, f, acc) => (
-	length := len(list)
-	(reducesub := (idx, acc) => (
-		idx :: {
-			length -> acc
-			_ -> reducesub(
-				idx + 1
-				f(acc, list.(idx))
-			)
-		}
-	)
-	)(0, acc)
-)
-
-` tail recursive numeric list -> string converter `
-stringList := list => (
-	length := len(list)
-	stringListRec := (start, acc) => (
-		start :: {
-			length -> acc
-			_ -> stringListRec(
-				start + 1
-				(acc :: {
-					'' -> ''
-					_ -> acc + ', '
-				}) + string(list.(start))
-			)
-		}
-	)
-	'[' + stringListRec(0, '') + ']'
-)
-
-` utility function for printing things `
-log := s => out(s + '
-')
 
 ` primes under N are numbers 2 .. N, filtered by isPrime `
 getPrimesUnder := n => filter(buildConsecutive(n), isPrime)

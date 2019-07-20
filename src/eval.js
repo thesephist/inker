@@ -4,7 +4,6 @@ const INKPATH = process.env.INKPATH || './bin/ink';
 
 function evalInk(inkSource) {
     return new Promise((res, rej) => {
-        // TODO: eventually, sandbox this with '--no-read --no-write --no-net (--no-exec?)'
         let output = '';
         const start = Date.now();
         const end = () => (Date.now() - start) / 1000;
@@ -12,6 +11,8 @@ function evalInk(inkSource) {
         // -isolate flag sandboxes the running process
         const proc = spawn(`${INKPATH}`, ['-isolate'], {
             stdio: 'pipe',
+            // allow imports from other examples
+            cwd: './static/ex',
         });
 
         // TODO: what if we HTTP stream this output instead? ~~Node.js Streams~~

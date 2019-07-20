@@ -1,72 +1,18 @@
 ` list function demos `
 
-` tail recursive reversing a list `
-reverse := list => (
-	state := [len(list) - 1]
-	reduce(list, (acc, item) => (
-		acc.(state.0) := item
-		state.0 := state.0 - 1
-		acc
-	), {})
-)
+std := load('std')
 
-` tail recursive map `
-map := (list, f) => (
-	reduce(list, (l, item) => (
-		l.(len(l)) := f(item)
-		l
-	), {})
-)
+log := std.log
+stringList := std.stringList
 
-` tail recursive filter `
-filter := (list, f) => (
-	reduce(list, (l, item) => (
-		f(item) :: {
-			true -> l.(len(l)) := item
-		}
-		l
-	), {})
-)
-
-` tail recursive reduce `
-reduce := (list, f, acc) => (
-	(reducesub := (idx, acc) => (
-		idx :: {
-			len(list) -> acc
-			_ -> reducesub(
-				idx + 1
-				f(acc, list.(idx))
-			)
-		}
-	)
-	)(0, acc)
-)
+reverse := std.reverse
+map := std.map
+filter := std.filter
+reduce := std.reduce
+each := std.each
 
 ` create a simple list `
 list := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
-` utility functions for printing `
-log := s => out(s + '
-')
-
-` tail recursive numeric list -> string converter `
-stringList := list => (
-	stringListRec := (l, start, acc) => (
-		start :: {
-			len(l) -> acc
-			_ -> stringListRec(
-				l
-				start + 1
-				(acc :: {
-					'' -> ''
-					_ -> acc + ', '
-				}) + string(l.(start))
-			)
-		}
-	)
-	'[' + stringListRec(list, 0, '') + ']'
-)
-
 
 
 log('Mapped 1-10 list, squared
@@ -81,3 +27,5 @@ log('Reduced 1-10 list, multiplication
 log('Reversing 1-10 list
 -> ' + stringList(reverse(list)))
 
+log('For-each loop')
+each(list, n => log(n))

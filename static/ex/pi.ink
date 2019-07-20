@@ -1,10 +1,11 @@
 ` Monte-Carlo estimation of pi using random number generator `
 
-COUNT := 50000
+std := load('std')
 
-` wrapper around printf (out) to add a newline at end `
-log := s => out(s + '
-')
+log := std.log
+f := std.format
+
+COUNT := 100000
 
 ` pick a random point in [0, 1) in x and y `
 randCoord := () => [rand(), rand()]
@@ -50,5 +51,7 @@ state := {
 repeatableIteration := loop(iteration)
 repeatableIteration(COUNT) `` do COUNT times
 
-log('Estimate of Pi after ' + string(COUNT) + ' runs: ' +
-	string(4 * state.inCount / COUNT))
+log(f('Estimate of Pi after {{ count }} runs: {{ estimate }}', {
+	count: COUNT,
+	estimate: 4 * state.inCount / COUNT
+}))
