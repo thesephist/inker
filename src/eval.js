@@ -1,6 +1,6 @@
 const { spawn } = require('child_process');
 
-const INKPATH = process.env.INKPATH || 'bin/ink';
+const INKPATH = process.env.INKPATH || '../../bin/ink';
 
 function evalInk(inkSource) {
     return new Promise((res, rej) => {
@@ -9,7 +9,7 @@ function evalInk(inkSource) {
         const end = () => (Date.now() - start) / 1000;
 
         // -isolate flag sandboxes the running process
-        const proc = spawn(`../../${INKPATH}`, ['-isolate'], {
+        const proc = spawn(`${INKPATH}`, ['-isolate'], {
             stdio: 'pipe',
             // allow imports from other examples
             cwd: './static/ex',

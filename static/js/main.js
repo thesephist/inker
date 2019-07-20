@@ -39,6 +39,10 @@ const EXAMPLES = [
         slug: 'std',
         description: 'The Ink standard library, a set of useful functions and utilities for composing programs',
     },
+    {
+        slug: 'quine',
+        description: 'A quine in Ink -- a program whose output is its own source code',
+    },
 ];
 
 async function evalInk(inkSource) {
