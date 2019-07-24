@@ -17,31 +17,14 @@ scan := callback => (
 )
 
 ` hexadecimal conversion utility functions `
-hToN := {
-	'0': 0
-	'1': 1
-	'2': 2
-	'3': 3
-	'4': 4
-	'5': 5
-	'6': 6
-	'7': 7
-	'8': 8
-	'9': 9
-	'a': 10
-	'b': 11
-	'c': 12
-	'd': 13
-	'e': 14
-	'f': 15
-}
-nToH := ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+hToN := {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 'a': 10, 'b': 11, 'c': 12, 'd': 13, 'e': 14, 'f': 15}
+nToH := '0123456789abcdef'
 
 ` take number, return hex string `
 hex := n => (
 	(sub := (p, acc) => p < 16 :: {
 		true -> nToH.(p) + acc
-		false -> sub(floor(p  / 16), nToH.(p % 16) + acc)
+		false -> sub(floor(p / 16), nToH.(p % 16) + acc)
 	})(floor(n), '')
 )
 
@@ -101,38 +84,30 @@ clamp := (start, end, min, max) => (
 
 ` get a substring of a given string `
 slice := (str, start, end) => (
-	result := ['']
-
 	` bounds checks `
 	x := clamp(start, end, 0, len(str))
 	start := x.start
 	end := x.end
 
-	(sl := i => i :: {
-		end -> result.0
-		_ -> (
-			result.0 := result.0 + str.(i)
-			sl(i + 1)
-		)
-	})(start)
+	max := end - start
+	(sub := (i, acc) => i :: {
+		max -> acc
+		_ -> sub(i + 1, acc + str.(start + i))
+	})(0, '')
 )
 
 ` get a sub-list of a given list `
 sliceList := (list, start, end) => (
-	result := []
-
 	` bounds checks `
 	x := clamp(start, end, 0, len(list))
 	start := x.start
 	end := x.end
 
-	(sl := i => i :: {
-		end -> result
-		_ -> (
-			result.len(result) := list.(i)
-			sl(i + 1)
-		)
-	})(start)
+	max := end - start
+	(sub := (i, acc) => i :: {
+		max -> acc
+		_ -> sub(i + 1, acc.(i) := list.(start + i))
+	})(0, [])
 )
 
 ` join one list to the end of another, return the original first list `
@@ -152,28 +127,14 @@ append := (base, child) => (
 join := (base, child) => append(clone(base), child)
 
 ` clone a composite value `
-clone := comp => (
-	reduce(keys(comp), (acc, k) => (
-		acc.(k) := comp.(k)
-		acc
-	), {})
-)
+clone := x => type(x) :: {
+	'string' -> '' + x
+	'composite' -> reduce(keys(x), (acc, k) => acc.(k) := x.(k), {})
+	_ -> x
+}
 
 ` tail recursive numeric list -> string converter `
-stringList := list => (
-	length := len(list)
-	stringListRec := (start, acc) => start :: {
-		length -> acc
-		_ -> stringListRec(
-			start + 1
-			(acc :: {
-				'' -> ''
-				_ -> acc + ', '
-			}) + string(list.(start))
-		)
-	}
-	'[' + stringListRec(0, '') + ']'
-)
+stringList := list => '[' + cat(map(list, x => string(x)), ', ') + ']'
 
 ` tail recursive reversing a list `
 reverse := list => (
@@ -213,12 +174,23 @@ filter := (list, f) => (
 reduce := (list, f, acc) => (
 	length := len(list)
 	(sub := (i, acc) => i :: {
-			length -> acc
-			_ -> sub(
-				i + 1
-				f(acc, list.(i))
-			)
+		length -> acc
+		_ -> sub(
+			i + 1
+			f(acc, list.(i))
+		)
 	})(0, acc)
+)
+
+` concatenate (join) a list of strings into a string `
+cat := (list, joiner) => (
+	length := len(list) :: {
+		0 -> ''
+		_ -> (sub := (i, acc) => i :: {
+			length -> acc
+			_ -> sub(i + 1, acc + joiner + list.(i))
+		})(1, list.0)
+	}
 )
 
 ` for-each loop over a list `
@@ -233,27 +205,19 @@ each := (list, f) => (
 	})(0)
 )
 
-` encode ascii string into a number list
-	we don't use reduce here, because this has to be fast,
-	and we implement an optimized loop instead with minimal copying `
+` encode string buffer into a number list `
 encode := str => (
-	acc := [{}]
-	strln := len(str)
-	(sub := i => i :: {
-		strln -> acc.0
-		_ -> (
-			(acc.0).(i) := point(str.(i))
-			sub(i + 1)
-		)
-	})(0)
+	max := len(str)
+	(sub := (i, acc) => i :: {
+		max -> acc
+		_ -> sub(i + 1, acc.(i) := point(str.(i)))
+	})(0, [])
 )
 
 ` decode number list into an ascii string `
 decode := data => reduce(data, (acc, cp) => acc + char(cp), '')
 
-` utility for reading an entire file
-	readFile does not lean on readRawFile because a string-based
-	implementation can be more efficient here `
+` utility for reading an entire file `
 readFile := (path, callback) => (
 	BUFSIZE := 4096 ` bytes `
 	sent := [false]
@@ -267,10 +231,10 @@ readFile := (path, callback) => (
 				'data' -> (
 					dataLen := len(evt.data)
 					dataLen = BUFSIZE :: {
-						true -> accumulate(offset + dataLen, acc + decode(evt.data))
+						true -> accumulate(offset + dataLen, acc + evt.data)
 						false -> (
 							sent.0 := true
-							callback(acc + decode(evt.data))
+							callback(acc + evt.data)
 						)
 					}
 				)
@@ -279,39 +243,10 @@ readFile := (path, callback) => (
 	)))(0, '')
 )
 
-` utility for reading an entire file without string conversion `
-readRawFile := (path, callback) => (
-	BUFSIZE := 4096 ` bytes `
-	sent := [false]
-	(accumulate := (offset, acc) => read(path, offset, BUFSIZE, evt => (
-		sent.0 :: {false -> (
-			evt.type :: {
-				'error' -> (
-					sent.0 := true
-					callback(())
-				)
-				'data' -> (
-					dataLen := len(evt.data)
-					dataLen = BUFSIZE :: {
-						true -> accumulate(offset + dataLen, append(acc, evt.data))
-						false -> (
-							sent.0 := true
-							callback(append(acc, evt.data))
-						)
-					}
-				)
-			}
-		)}
-	)))(0, [])
-)
-
 ` utility for writing an entire file
-	is not buffered, because it's simpler, but may cause jank later
+	it's not buffered, because it's simpler, but may cause jank later
 	we'll address that if/when it becomes a performance issue `
-writeFile := (path, data, callback) => writeRawFile(path, encode(data), callback)
-
-` analogue of readRawFile for writeFile `
-writeRawFile := (path, data, callback) => (
+writeFile := (path, data, callback) => (
 	sent := [false]
 	write(path, 0, data, evt => (
 		sent.0 :: {false -> (
@@ -334,8 +269,7 @@ format := (raw, values) => (
 			0 -> normal
 			1 -> seen one {
 			2 -> seen two {
-			3 -> seen a valid }
-		`
+			3 -> seen a valid } `
 		which: 0
 		` buffer for currently reading key `
 		key: ''
