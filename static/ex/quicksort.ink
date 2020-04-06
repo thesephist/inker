@@ -8,13 +8,13 @@ log := std.log
 stringList := std.stringList
 
 ` main recursive quicksort routine `
-quicksort := (list, lo, hi) => (
-	lo < hi :: {true -> (
+quicksort := (list, lo, hi) => lo < hi :: {
+	true -> (
 		p := partition(list, lo, hi)
 		quicksort(list, lo, p - 1)
 		quicksort(list, p + 1, hi)
-	)}
-)
+	)
+}
 
 ` Lomuto partition scheme `
 partition := (list, lo, hi) => (
@@ -24,18 +24,20 @@ partition := (list, lo, hi) => (
 		i: lo
 	}
 
-	jLoop := j => j :: {
+	loop := j => j :: {
 		hi -> ()
 		_ -> (
-			list.(j) < pivot :: {true -> (
-				swap(list, acc.i, j)
-				acc.i := acc.i + 1
-			)}
-			jLoop(j + 1)
+			list.(j) < pivot :: {
+				true -> (
+					swap(list, acc.i, j)
+					acc.i := acc.i + 1
+				)
+			}
+			loop(j + 1)
 		)
 	}
 	
-	jLoop(lo)
+	loop(lo)
 
 	swap(list, acc.i, hi)
 	acc.i
@@ -54,8 +56,6 @@ swap := (list, i, j) => (
 ` top-level sorting function for QuickSort `
 sort := list => quicksort(list, 0, len(list) - 1)
 
-` utility functions to test quicksort below -> `
-
 ` random list builder `
 buildList := (length, opts) => (
 	max := (opts.max :: {
@@ -67,14 +67,14 @@ buildList := (length, opts) => (
 		0 -> {}
 		_ -> (
 			smaller := buildList(length - 1, {max: max})
-			smaller.(len(smaller)) := floor(rand() * max) + 1
+			smaller.len(smaller) := floor(rand() * max) + 1
 			smaller
 		)
 	}
 )
 
+`` main
 list := buildList(100, {})
-
 out('Quicksorting random list: ' + stringList(list) + '
 sorted -> ')
 sort(list)

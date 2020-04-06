@@ -3,17 +3,15 @@
 log := val => out(string(val) + '
 ')
 
-scan := callback => (
+scan := cb => (
 	acc := ['']
-	cb := evt => evt.type :: {
-		'end' -> callback(acc.0)
+	in(evt => evt.type :: {
+		'end' -> cb(acc.0)
 		'data' -> (
-			acc.0 :=
-				acc.0 + slice(evt.data, 0, len(evt.data) - 1)
+			acc.0 := acc.0 + slice(evt.data, 0, len(evt.data) - 1)
 			false
 		)
-	}
-	in(cb)
+	})
 )
 
 ` hexadecimal conversion utility functions `
@@ -21,12 +19,10 @@ hToN := {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 'a': 10, 'b
 nToH := '0123456789abcdef'
 
 ` take number, return hex string `
-hex := n => (
-	(sub := (p, acc) => p < 16 :: {
-		true -> nToH.(p) + acc
-		false -> sub(floor(p / 16), nToH.(p % 16) + acc)
-	})(floor(n), '')
-)
+hex := n => (sub := (p, acc) => p < 16 :: {
+	true -> nToH.(p) + acc
+	false -> sub(floor(p / 16), nToH.(p % 16) + acc)
+})(floor(n), '')
 
 ` take hex string, return number `
 xeh := s => (
@@ -69,7 +65,7 @@ range := (start, end, step) => (
 )
 
 ` clamp start and end numbers to ranges, such that
-	start < end. Utility used in slice/sliceList`
+	start < end. Utility used in slice `
 clamp := (start, end, min, max) => (
 	start := (start < min :: {
 		true -> min
@@ -94,32 +90,20 @@ clamp := (start, end, min, max) => (
 	}
 )
 
-` get a substring of a given string `
-slice := (str, start, end) => (
+` get a substring of a given string, or sublist of a given list `
+slice := (s, start, end) => (
 	` bounds checks `
-	x := clamp(start, end, 0, len(str))
+	x := clamp(start, end, 0, len(s))
 	start := x.start
-	end := x.end
+	max := x.end - start
 
-	max := end - start
 	(sub := (i, acc) => i :: {
 		max -> acc
-		_ -> sub(i + 1, acc + str.(start + i))
-	})(0, '')
-)
-
-` get a sub-list of a given list `
-sliceList := (list, start, end) => (
-	` bounds checks `
-	x := clamp(start, end, 0, len(list))
-	start := x.start
-	end := x.end
-
-	max := end - start
-	(sub := (i, acc) => i :: {
-		max -> acc
-		_ -> sub(i + 1, acc.(i) := list.(start + i))
-	})(0, [])
+		_ -> sub(i + 1, acc.(i) := s.(start + i))
+	})(0, type(s) :: {
+		'string' -> ''
+		'composite' -> []
+	})
 )
 
 ` join one list to the end of another, return the original first list `
@@ -146,17 +130,13 @@ clone := x => type(x) :: {
 }
 
 ` tail recursive numeric list -> string converter `
-stringList := list => '[' + cat(map(list, x => string(x)), ', ') + ']'
+stringList := list => '[' + cat(map(list, string), ', ') + ']'
 
 ` tail recursive reversing a list `
-reverse := list => (
-	state := [len(list) - 1]
-	reduce(list, (acc, item) => (
-		acc.(state.0) := item
-		state.0 := state.0 - 1
-		acc
-	), {})
-)
+reverse := list => (sub := (acc, i, j) => j :: {
+	0 -> acc.(i) := list.0
+	_ -> sub(acc.(i) := list.(j), i + 1, j - 1)
+})([], 0, len(list) - 1)
 
 ` tail recursive map `
 map := (list, f) => reduce(list, (l, item, i) => l.(i) := f(item, i), {})
@@ -185,27 +165,13 @@ reduce := (list, f, acc) => (
 )
 
 ` tail recursive reduce from list end `
-reduceBack := (list, f, acc) => (
-	(sub := (i, acc) => i :: {
-		~1 -> acc
-		_ -> sub(i - 1, f(acc, list.(i), i))
-	})(len(list) - 1, acc)
-)
+reduceBack := (list, f, acc) => (sub := (i, acc) => i :: {
+	~1 -> acc
+	_ -> sub(i - 1, f(acc, list.(i), i))
+})(len(list) - 1, acc)
 
 ` flatten by depth 1 `
-flatten := list => (
-	max := len(list)
-	(sub := (i, count, acc) => i :: {
-		max -> acc
-		_ -> (
-			cur := list.(i)
-			each(cur, (item, idx) => (
-				acc.(count + idx) := item
-			))
-			sub(i + 1, count + len(cur), acc)
-		)
-	})(0, 0, [])
-)
+flatten := list => reduce(list, append, [])
 
 ` true iff some items in list are true `
 some := list => reduce(list, (acc, x) => acc | x, false)
@@ -214,15 +180,13 @@ some := list => reduce(list, (acc, x) => acc | x, false)
 every := list => reduce(list, (acc, x) => acc & x, true)
 
 ` concatenate (join) a list of strings into a string `
-cat := (list, joiner) => (
-	max := len(list) :: {
-		0 -> ''
-		_ -> (sub := (i, acc) => i :: {
-			max -> acc
-			_ -> sub(i + 1, acc + joiner + list.(i))
-		})(1, list.0)
-	}
-)
+cat := (list, joiner) => max := len(list) :: {
+	0 -> ''
+	_ -> (sub := (i, acc) => i :: {
+		max -> acc
+		_ -> sub(i + 1, acc.len(acc) := joiner + list.(i))
+	})(1, clone(list.0))
+}
 
 ` for-each loop over a list `
 each := (list, f) => (
@@ -246,55 +210,36 @@ encode := str => (
 )
 
 ` decode number list into an ascii string `
-decode := data => reduce(data, (acc, cp) => acc + char(cp), '')
+decode := data => reduce(data, (acc, cp) => acc.len(acc) := char(cp), '')
 
 ` utility for reading an entire file `
-readFile := (path, callback) => (
-	BUFSIZE := 4096 ` bytes `
-	sent := [false]
-	(accumulate := (offset, acc) => read(path, offset, BUFSIZE, evt => (
-		sent.0 :: {false -> (
-			evt.type :: {
-				'error' -> (
-					sent.0 := true
-					callback(())
-				)
-				'data' -> (
-					dataLen := len(evt.data)
-					dataLen = BUFSIZE :: {
-						true -> accumulate(offset + dataLen, acc + evt.data)
-						false -> (
-							sent.0 := true
-							callback(acc + evt.data)
-						)
-					}
-				)
+readFile := (path, cb) => (
+	BufSize := 4096 ` bytes `
+	(sub := (offset, acc) => read(path, offset, BufSize, evt => evt.type :: {
+		'error' -> cb(())
+		'data' -> (
+			dataLen := len(evt.data)
+			dataLen = BufSize :: {
+				true -> sub(offset + dataLen, acc.len(acc) := evt.data)
+				false -> cb(acc.len(acc) := evt.data)
 			}
-		)}
-	)))(0, '')
+		)
+	}))(0, '')
 )
 
 ` utility for writing an entire file
 	it's not buffered, because it's simpler, but may cause jank later
 	we'll address that if/when it becomes a performance issue `
-writeFile := (path, data, callback) => (
-	sent := [false]
+writeFile := (path, data, cb) => delete(path, evt => evt.type :: {
 	` write() by itself will not truncate files that are too long,
 		so we delete the file and re-write. Not efficient, but writeFile
 		is not meant for large files `
-	delete(path, evt => evt.type :: {
-		'end' -> write(path, 0, data, evt => (
-			sent.0 :: {false -> (
-				sent.0 := true
-				evt.type :: {
-					'error' -> callback(())
-					'end' -> callback(true)
-				}
-			)}
-		))
-		_ -> callback(())
+	'end' -> write(path, 0, data, evt => evt.type :: {
+		'error' -> cb(())
+		'end' -> cb(true)
 	})
-)
+	_ -> cb(())
+})
 
 ` template formatting with {{ key }} constructs `
 format := (raw, values) => (

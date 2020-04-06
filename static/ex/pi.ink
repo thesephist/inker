@@ -1,11 +1,12 @@
 ` Monte-Carlo estimation of pi using random number generator `
 
-std := load('std')
+log := load('std').log
 
-log := std.log
-f := std.format
-
-COUNT := 100000
+` take count from CLI, defaulting to 250k `
+Count := (c := number(args().2) :: {
+	0 -> 250000
+	_ -> c
+})
 
 ` pick a random point in [0, 1) in x and y `
 randCoord := () => [rand(), rand()]
@@ -25,9 +26,13 @@ iteration := iterCount => (
 		true -> state.inCount := state.inCount + 1
 	}
 
-	iterCount % 5000 :: {
-		1 -> log(string(iterCount) + ' runs left, Pi at ' +
-			string(4 * state.inCount / (COUNT - iterCount)))
+	` log progress at 100k intervals `
+	iterCount :: {
+		Count -> ()
+		_ -> iterCount % 100000 :: {
+			0 -> log(string(iterCount) + ' runs left, Pi at ' +
+				string(4 * state.inCount / (Count - iterCount)))
+		}
 	}
 )
 
@@ -49,9 +54,7 @@ state := {
 
 ` estimation routine `
 repeatableIteration := loop(iteration)
-repeatableIteration(COUNT) `` do COUNT times
+repeatableIteration(Count) `` do Count times
 
-log(f('Estimate of Pi after {{ count }} runs: {{ estimate }}', {
-	count: COUNT,
-	estimate: 4 * state.inCount / COUNT
-}))
+log('Estimate of Pi after ' + string(Count) + ' runs: ' +
+	string(4 * state.inCount / Count))
