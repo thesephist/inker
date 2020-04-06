@@ -40,6 +40,10 @@ const EXAMPLES = [
         description: 'The Ink standard library, a set of useful functions and utilities for composing programs',
     },
     {
+        slug: 'str',
+        description: 'The Ink standard string library, including idiomatic implementations of tail-recursive string manipulation functions',
+    },
+    {
         slug: 'quine',
         description: 'A quine in Ink -- a program whose output is its own source code',
     },

@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 
 const INKPATH = process.env.INKPATH || '../../bin/ink';
+const TIMEOUT_SECONDS = 5;
 
 function evalInk(inkSource) {
     return new Promise((res, rej) => {
@@ -15,7 +16,6 @@ function evalInk(inkSource) {
             cwd: './static/ex',
         });
 
-        // TODO: what if we HTTP stream this output instead? ~~Node.js Streams~~
         proc.stdout.on('data', data => {
             output += data;
         });
@@ -54,8 +54,8 @@ function evalInk(inkSource) {
 
         setTimeout(() => {
             proc.kill('SIGTERM');
-            // 20s is current timeout
-        }, 20 * 1000);
+            // 5s is current timeout
+        }, TIMEOUT_SECONDS * 1000);
     });
 }
 
