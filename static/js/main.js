@@ -29,7 +29,7 @@ const EXAMPLES = [
     },
     {
         slug: 'quicksort',
-        description: 'An efficient in-place quicksort with Lomuto partitioning.',
+        description: 'An efficient in-place quicksort with Hoare partitioning.',
     },
     {
         slug: 'newton',
